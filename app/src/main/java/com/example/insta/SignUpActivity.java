@@ -1,25 +1,20 @@
 package com.example.insta;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.parse.ParseObject;
-import com.parse.ParseUser;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.parse.ParseException;
 import com.parse.ParseUser;
-import com.parse.SaveCallback;
 import com.parse.SignUpCallback;
-
-import java.util.Stack;
-
-import javax.security.auth.callback.Callback;
 
 public class SignUpActivity extends AppCompatActivity {
     private TextView uName, uPss,uId;
@@ -37,6 +32,17 @@ public class SignUpActivity extends AppCompatActivity {
         uPer = findViewById(R.id.per);
         login = findViewById(R.id.login);
         button = findViewById(R.id.button);
+        uPss.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View view, int keyCode, KeyEvent event) {
+
+                if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN){
+                    onClick(button);
+                }
+
+                return false;
+            }
+        });
         login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -44,8 +50,11 @@ public class SignUpActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+        if (ParseUser.getCurrentUser() != null){
+            transitionActivity();
+        }
     }
-    public void updateValue(View view) {
+    public void onClick(View view) {
         final ParseUser userLogin = new ParseUser();
         userLogin.setUsername(uName.getText().toString());
         userLogin.setPassword(uPss.getText().toString());
@@ -58,15 +67,27 @@ public class SignUpActivity extends AppCompatActivity {
             public void done(ParseException e) {
                 if (e == null){
                     Toast.makeText(SignUpActivity.this,"Signed up successfully",Toast.LENGTH_LONG).show();
-                    Intent intent = new Intent(SignUpActivity.this,WelcomeActivity.class);
-                    startActivity(intent);
-                    progressDialog.dismiss();
-                } else {
-                    Toast.makeText(SignUpActivity.this,"Something went Wrong",Toast.LENGTH_LONG).show();
-                    progressDialog.dismiss();
+                    transitionActivity();
                 }
+                else {
+                    Toast.makeText(SignUpActivity.this,"Something went Wrong",Toast.LENGTH_LONG).show();
+                }
+                progressDialog.dismiss();
             }
         });
     }
+    public void hideKeyboardMethod(View view){
+        try {
+            InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+            inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),0);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        }
+        private void transitionActivity(){
+            Intent intent = new Intent(SignUpActivity.this,WelcomeActivity.class);
+            startActivity(intent);
+            finish();
+        }
 }
 
