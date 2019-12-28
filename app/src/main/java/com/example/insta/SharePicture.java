@@ -170,7 +170,7 @@ public class SharePicture extends Fragment implements View.OnClickListener{
                         Toast.makeText(getContext(),"Error: you must have caption",Toast.LENGTH_LONG).show();
                     } else {
                         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                        receivedImageBitmap.compress(Bitmap.CompressFormat.PNG,100,byteArrayOutputStream);
+                        receivedImageBitmap.compress(Bitmap.CompressFormat.PNG,10,byteArrayOutputStream);
                         byte[] bytes = byteArrayOutputStream.toByteArray();
                         ParseFile parseFile = new ParseFile("img.png",bytes);
                         ParseObject parseObject = new ParseObject("Photo");

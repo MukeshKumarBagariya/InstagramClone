@@ -1,23 +1,29 @@
 package com.example.insta;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import androidx.fragment.app.Fragment;
 
 import com.parse.FindCallback;
+import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import libs.mjn.prettydialog.PrettyDialog;
+import libs.mjn.prettydialog.PrettyDialogCallback;
 
 
 /**
@@ -28,13 +34,13 @@ import java.util.List;
  * Use the {@link User#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class User extends Fragment {
+public class User extends Fragment implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
     private ListView listView;
-    private ArrayList arrayList;
+    private ArrayList<String> arrayList;
     private ArrayAdapter arrayAdapter;
 
     // TODO: Rename and change types of parameters
@@ -82,6 +88,8 @@ public class User extends Fragment {
         listView = view.findViewById(R.id.listView);
         arrayList = new ArrayList();
         arrayAdapter = new ArrayAdapter(getContext(),android.R.layout.simple_list_item_1,arrayList);
+        listView.setOnItemClickListener(User.this);
+        listView.setOnItemLongClickListener(User.this);
         ParseQuery<ParseUser> parseQuery = ParseUser.getQuery();
         parseQuery.whereNotEqualTo("username",ParseUser.getCurrentUser().getUsername());
         parseQuery.findInBackground(new FindCallback<ParseUser>() {
@@ -127,6 +135,46 @@ public class User extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+        Intent intent = new Intent(getContext(), UserPost.class);
+        intent.putExtra("username",arrayList.get(position));
+        startActivity(intent);
+    }
+
+    @Override
+    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+
+        ParseQuery<ParseUser> parseQuery = ParseUser.getQuery();
+        parseQuery.whereEqualTo("username",arrayList.get(position));
+        parseQuery.getFirstInBackground(new GetCallback<ParseUser>() {
+            @Override
+            public void done(ParseUser object, ParseException e) {
+                if (object != null && e == null){
+                    final PrettyDialog prettyDialog = new PrettyDialog(getContext());
+                    prettyDialog.setTitle(object.getUsername() + "'s Info")
+                    .setMessage(object.get("UserProfession")+"\n"
+                    + object.get("UserHobbies")+"\n"
+                    +object.get("UserDOB")+"\n"
+                    +object.get("UserBio"))
+                            .setIcon(R.drawable.person)
+                    .addButton("OK",
+                            R.color.pdlg_color_gray,
+                            R.color.pdlg_color_green,
+                            new PrettyDialogCallback() {
+                                @Override
+                                public void onClick() {
+                                    prettyDialog.dismiss();
+                                }
+                            }).show();
+
+                }
+            }
+        });
+        return true;
     }
 
     /**
